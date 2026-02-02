@@ -4,7 +4,7 @@ import math
 class Car:
     def __init__(self, color=(255, 0, 0)):
         self.reset()
-        self.max_forward_velocity = 5
+        self.max_forward_velocity = 7
         self.acceleration = 0.1
         self.color = color
         self.width = 40
@@ -12,7 +12,7 @@ class Car:
         self.points = 0
 
     def reset(self):
-        self.pos = (350, 100)
+        self.pos = (500, 100)
         self.angle = 0
         self.forward_velocity = 0
         self.points = 0
@@ -55,7 +55,7 @@ class Car:
     def stop(self):
         if self.forward_velocity > 0:
             self.forward_velocity -= self.acceleration
-    
+        
     def turn_left(self):
         self.angle -= 3
     
@@ -73,18 +73,18 @@ class Game:
 
     def add_gates(self):
         self.gateList.clear()
-        self.gateList.append((pygame.Rect(550, 50, 10, 100), 10))
-        self.gateList.append((pygame.Rect(750, 50, 10, 100), 10))
-        self.gateList.append((pygame.Rect(950, 50, 10, 100), 10))
-        self.gateList.append((pygame.Rect(1050, 250, 100, 10), 10))
-        self.gateList.append((pygame.Rect(1000, 350, 10, 100), 10))
-        self.gateList.append((pygame.Rect(850, 500, 100, 10), 10))
-        self.gateList.append((pygame.Rect(800, 550, 10, 100), 10))
-        self.gateList.append((pygame.Rect(650, 500, 100, 10), 10))
-        self.gateList.append((pygame.Rect(550, 350, 10, 100), 10))
-        self.gateList.append((pygame.Rect(350, 600, 100, 10), 10))
-        self.gateList.append((pygame.Rect(50, 600, 100, 10), 10))
-        self.gateList.append((pygame.Rect(50, 200, 100, 10), 10))
+        self.gateList.append((pygame.Rect(550, 50, 10, 100), 5))
+        self.gateList.append((pygame.Rect(750, 50, 10, 100), 5))
+        self.gateList.append((pygame.Rect(950, 50, 10, 100), 5))
+        self.gateList.append((pygame.Rect(1050, 250, 100, 10), 5))
+        self.gateList.append((pygame.Rect(1000, 350, 10, 100), 5))
+        self.gateList.append((pygame.Rect(850, 500, 100, 10), 5))
+        self.gateList.append((pygame.Rect(800, 550, 10, 100), 5))
+        self.gateList.append((pygame.Rect(650, 500, 100, 10), 5))
+        self.gateList.append((pygame.Rect(550, 350, 10, 100), 4))
+        self.gateList.append((pygame.Rect(350, 600, 100, 10), 3))
+        self.gateList.append((pygame.Rect(50, 600, 100, 10), 2))
+        self.gateList.append((pygame.Rect(50, 200, 100, 10), 1))
     
     def create_racetrack1(self):
         self.trackList.append(pygame.Rect(50, 50, 1100, 100))
@@ -124,16 +124,15 @@ class Game:
                     car.move(stop=True)
                     self.running = False
             if self.point_out_of_bounds(car.pos[0], car.pos[1]):
-                self.on_death()
+                self.on_death(car)
             car.handle_input()
             self.check_gates(car)
             car.move()
             self.get_sensor_data(car)
             self.clock.tick(60)
             display.draw_scene(self, car)
-        pygame.quit()
     
-    def on_death(self):
+    def on_death(self, car):
         car.reset()
         car.move(stop=True)
         self.add_gates()
@@ -149,7 +148,7 @@ class Game:
                 return distance, test_x, test_y
             if distance >= 399:
                 return distance, test_x, test_y
-        return 200, sensor_x, sensor_y
+        return 400, sensor_x, sensor_y
     
     def get_sensor_data(self, car):
         sensor_data = []
@@ -160,8 +159,9 @@ class Game:
 
 
 class DisplayGame:
-    def __init__(self, width=1200, height=900):
-        pygame.init()
+    def __init__(self, width=1200, height=900, init_pygame=True):
+        if init_pygame:
+            pygame.init()
         self.screen = pygame.display.set_mode((width, height))
         pygame.display.set_caption("Game Display")
         self.width = width
