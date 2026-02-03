@@ -17,7 +17,7 @@ class DrivingEnv(gym.Env):
     Observation space: Box(5,) - 5 sensor readings
     """
     
-    metadata = {"render_modes": ["human", "rgb_array"], "render_fps": 60}
+    metadata = {"render_modes": ["human", None], "render_fps": 60}
 
     def __init__(self, render_mode=None):
         self.game = basegame.Game()
@@ -26,10 +26,10 @@ class DrivingEnv(gym.Env):
         self.render_mode = render_mode
         
         self.observation_space = gym.spaces.Box(
-            low=0, high=400, shape=(5,), dtype=np.float32
+            low=0, high=400, shape=(6,), dtype=np.float32
         )
         
-        self.action_space = gym.spaces.Discrete(5)
+        self.action_space = gym.spaces.Discrete(7)
         
         self._step_count = 0
         self.max_episode_steps = 1000
@@ -47,16 +47,22 @@ class DrivingEnv(gym.Env):
         """Apply action to the car."""
         if action == 0:  # turn left
             self.car.turn_left()
+            self.car.stop()
         elif action == 1:  # go straight
             self.car.forward()
         elif action == 2:  # turn right
             self.car.turn_right()
+            self.car.stop()
         elif action == 3:  # turn left + forward
             self.car.turn_left()
             self.car.forward()
         elif action == 4:  # turn right + forward
             self.car.turn_right()
             self.car.forward()
+        elif action == 5:  # backward
+            self.car.backward()
+        elif action == 6:  # stop
+            self.car.stop()
     
     def _compute_reward(self):
         """Compute reward for current step."""

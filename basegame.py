@@ -4,7 +4,7 @@ import math
 class Car:
     def __init__(self, color=(255, 0, 0)):
         self.reset()
-        self.max_forward_velocity = 7
+        self.max_forward_velocity = 10
         self.acceleration = 0.1
         self.color = color
         self.width = 40
@@ -33,12 +33,15 @@ class Car:
         keystates = pygame.key.get_pressed()
         if keystates[pygame.K_UP]:
             self.forward()
+        elif keystates[pygame.K_DOWN]:
+            self.backward()
         else:
             self.stop()
         if keystates[pygame.K_LEFT]:
             self.turn_left()
         if keystates[pygame.K_RIGHT]:
             self.turn_right()
+
 
     def move(self, stop=False):
         dx = self.forward_velocity * math.cos(math.radians(self.angle))
@@ -61,6 +64,12 @@ class Car:
     
     def turn_right(self):
         self.angle += 3
+    
+    def backward(self):
+        if self.forward_velocity > 0:
+            self.forward_velocity -= 2 * self.acceleration
+        elif self.forward_velocity > -self.max_forward_velocity / 2:
+            self.forward_velocity -= self.acceleration
 
 
 class Game:
@@ -155,6 +164,7 @@ class Game:
         for angle_offset in [-45, -22.5, 0, 22.5, 45]:
             distance, x, y = self.car_wall_rays(car, angle_offset)
             sensor_data.append(distance)
+        sensor_data.append(car.forward_velocity * 40)
         return sensor_data
 
 
