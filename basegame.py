@@ -10,12 +10,17 @@ class Car:
         self.width = 40
         self.height = 20
         self.points = 0
+        self.moves_since_last_gate = 0
+        self.max_moves_without_gate = 200
+
 
     def reset(self):
         self.pos = (500, 100)
         self.angle = 0
         self.forward_velocity = 0
         self.points = 0
+        self.moves_since_last_gate = 0
+
     
     def get_corners(self):
         corners = []
@@ -44,6 +49,7 @@ class Car:
 
 
     def move(self, stop=False):
+        self.moves_since_last_gate += 1
         dx = self.forward_velocity * math.cos(math.radians(self.angle))
         dy = self.forward_velocity * math.sin(math.radians(self.angle))
         if stop:
@@ -111,7 +117,9 @@ class Game:
         
         self.add_gates()
 
-    def point_out_of_bounds(self, x, y):
+    def point_out_of_bounds(self, x, y, car):
+        if car.moves_since_last_gate > car.max_moves_without_gate:
+            return True
         for rect in self.trackList:
             if rect.collidepoint(x, y):
                 return False
@@ -122,9 +130,11 @@ class Game:
             self.add_gates()
         for gate_rect, gate_points in self.gateList:
             if gate_rect.collidepoint(car.pos):
+                car.moves_since_last_gate = 0
                 car.points += gate_points
                 self.gateList.remove((gate_rect, gate_points))
                 break
+        return False
     
     def main_loop(self, display, car):
         while self.running:
@@ -132,7 +142,7 @@ class Game:
                 if event.type == pygame.QUIT:
                     car.move(stop=True)
                     self.running = False
-            if self.point_out_of_bounds(car.pos[0], car.pos[1]):
+            if self.point_out_of_bounds(car.pos[0], car.pos[1], car):
                 self.on_death(car)
             car.handle_input()
             self.check_gates(car)
@@ -153,7 +163,7 @@ class Game:
         for distance in range(1, 400):
             test_x = sensor_x + (distance * math.cos(math.radians(sensor_angle)))
             test_y = sensor_y + (distance * math.sin(math.radians(sensor_angle)))
-            if self.point_out_of_bounds(test_x, test_y):
+            if self.point_out_of_bounds(test_x, test_y, car):
                 return distance, test_x, test_y
             if distance >= 399:
                 return distance, test_x, test_y
@@ -161,7 +171,7 @@ class Game:
     
     def get_sensor_data(self, car):
         sensor_data = []
-        for angle_offset in [-45, -22.5, 0, 22.5, 45]:
+        for angle_offset in [-90, -45, 0, 45, 90]:
             distance, x, y = self.car_wall_rays(car, angle_offset)
             sensor_data.append(distance)
         sensor_data.append(car.forward_velocity * 40)
@@ -187,26 +197,26 @@ class DisplayGame:
             pygame.draw.rect(self.screen, gate_color, rect, 0)
 
     def draw_ray(self, game, car):
-        for angle_offset in [-45, -22.5, 0, 22.5, 45]:
+        for angle_offset in [-90, -45, 0, 45, 90]:
             distance, end_x, end_y = game.car_wall_rays(car, angle_offset)
             pygame.draw.line(self.screen, (0, 255, 0), car.pos, (end_x, end_y), 2)
 
-    def draw_scene(self, game, car):
+    def draw_scene(self, game, car, title="Driving AI"):
         self.screen.fill((17, 99, 0))
         self.draw_racetrack(game)
         car.draw(self.screen)
-        self.draw_ray(game, car)
-        self.draw_stats(game, car)
+        # self.draw_ray(game, car)
+        self.draw_stats(game, car, title=title)
         pygame.display.flip()
     
-    def draw_stats(self, game, car):
+    def draw_stats(self, game, car, title="Driving AI"):
         font = pygame.font.SysFont(None, 24)
+        title_text = font.render(f"{title}", True, (255, 255, 255))
         speed_text = font.render(f"Speed: {car.forward_velocity:.2f}", True, (255, 255, 255))
         points_text = font.render(f"Points: {car.points}", True, (255, 255, 255))
-        timer_text = font.render(f"Time: {pygame.time.get_ticks() // 1000}s", True, (255, 255, 255))
-        self.screen.blit(speed_text, (10, 10))
-        self.screen.blit(points_text, (10, 40))
-        self.screen.blit(timer_text, (10, 70))
+        self.screen.blit(title_text, (10, 10))
+        self.screen.blit(speed_text, (10, 30))
+        self.screen.blit(points_text, (10, 50))
         
 
 if __name__ == "__main__":

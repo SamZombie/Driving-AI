@@ -13,6 +13,8 @@ class DrivingEnv(gym.Env):
     - 2: turn right
     - 3: turn left + forward
     - 4: turn right + forward
+    - 5: backward
+    - 6: stop
     
     Observation space: Box(5,) - 5 sensor readings
     """
@@ -32,7 +34,7 @@ class DrivingEnv(gym.Env):
         self.action_space = gym.spaces.Discrete(7)
         
         self._step_count = 0
-        self.max_episode_steps = 1000
+        self.max_episode_steps = 5000
         self._last_points = 0
         
         if render_mode == "human":
@@ -75,7 +77,7 @@ class DrivingEnv(gym.Env):
         
         reward -= 0.01
         
-        if self.game.point_out_of_bounds(self.car.pos[0], self.car.pos[1]):
+        if self.game.point_out_of_bounds(self.car.pos[0], self.car.pos[1], self.car):
             reward -= 5.0
         
         return float(reward)
@@ -103,7 +105,7 @@ class DrivingEnv(gym.Env):
         self._apply_action(action)
         self.car.move()
         self.game.check_gates(self.car)
-        
+
         obs = self._get_observation()
         reward = self._compute_reward()
         
@@ -111,7 +113,7 @@ class DrivingEnv(gym.Env):
         truncated = False
         info = {}
         
-        if self.game.point_out_of_bounds(self.car.pos[0], self.car.pos[1]):
+        if self.game.point_out_of_bounds(self.car.pos[0], self.car.pos[1], self.car):
             terminated = True
             info["terminal_observation"] = obs
             self.game.on_death(self.car)

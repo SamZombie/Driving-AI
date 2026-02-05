@@ -21,7 +21,7 @@ model = PPO("MlpPolicy", env, verbose=1)
 checkpoint_callback = CheckpointCallback(save_freq=500_000, save_path=ckpt_dir,
 										 name_prefix='ppo_driving')
 
-total_timesteps = 10_000_000
+total_timesteps = 5_000_000
 model.learn(total_timesteps=total_timesteps, callback=checkpoint_callback)
 
 model.save("ppo_driving_model_final")
